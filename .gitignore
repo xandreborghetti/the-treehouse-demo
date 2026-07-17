@@ -1,1 +1,4 @@
 .DS_Store
+app/config.js
+__pycache__/
+*.pyc

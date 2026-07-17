@@ -157,7 +157,7 @@ footer{text-align:center;color:var(--muted);font-family:var(--mono);font-size:.6
   <footer>THE TREEHOUSE · a private clubhouse for three</footer>
 
   <script>
-/* db */
+/* ---- mock data ---- */
 const db = (() => {
 // mock-data.js — sample in-memory store for The Treehouse (local dev only).
 //
@@ -358,7 +358,7 @@ const mediaLinks = [
 return { members, poemWeeks, posts, meetings, predictions, leaderboard, goals, bucketList, mediaLinks };
 })();
 
-/* data layer */
+/* ---- data layer (the Supabase seam) ---- */
 const data = (() => {
 // data.js — THE SEAM.
 //
@@ -587,7 +587,7 @@ function currentWeek() {
 return { getMembers, getPosts, addPost, addReaction, addComment, getPoemOfWeek, getMeetings, getMeeting, getPredictions, addPrediction, votePrediction, getLeaderboard, getGoals, addGoal, checkinGoal, getBucketList, addBucketItem, markBucketDone, getMediaLinks, addMediaLink };
 })();
 
-/* app */
+/* ---- app ---- */
 (() => {
 // app.js — The Treehouse UI. Renders each section from the data layer and wires
 // interactions that write THROUGH data.js (never the store directly). Every

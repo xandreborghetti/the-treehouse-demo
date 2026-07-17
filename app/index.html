@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>The Treehouse</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>
+    <div class="hd">
+      <div class="mark">Three<span class="dot">·</span>house</div>
+      <div class="who" id="who"><!-- avatars injected by app.js --></div>
+      <button id="themeToggle" class="theme-toggle" title="Toggle light/dark" aria-label="Toggle theme">◐</button>
+    </div>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <button class="nav-btn is-active" data-section="wall">🧱 Wall</button>
+      <button class="nav-btn" data-section="meetings">🎙️ Meetings</button>
+      <button class="nav-btn" data-section="predictions">🔮 Predictions</button>
+      <button class="nav-btn" data-section="goals">🎯 Goals</button>
+      <button class="nav-btn" data-section="bucket">🪣 Bucket List</button>
+      <button class="nav-btn" data-section="shelf">🎵 Shelf</button>
+    </nav>
+  </header>
+
+  <main class="wrap" id="app">
+    <p class="demo">local scaffold · sample content · no data saved</p>
+    <div id="view"><!-- sections rendered here by app.js --></div>
+  </main>
+
+  <footer>THE TREEHOUSE · a private clubhouse for three · local scaffold</footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
