@@ -109,40 +109,35 @@ async function renderWall() {
 
   view.innerHTML = `
     ${poemHTML}
-    ${composeCard()}
     <div class="sec">🧱 The wall</div>
-    <div id="feed">${posts.map(postCard).join('')}</div>
+    <div id="feed" class="chat">${posts.map(postCard).join('')}</div>
+    ${composeBar()}
   `;
 
   wireCompose();
   wireFeed();
 }
 
-function composeCard() {
+// Chat-style input bar, pinned to the bottom of the Wall view.
+function composeBar() {
   return `
-    <div class="card compose" id="composeCard">
-      <div class="compose-collapsed" id="composeCollapsed">
-        <span class="plus">+</span><span>Share a poem, a song, a thought, a photo…</span>
-      </div>
-      <form class="compose-form" id="composeForm">
-        <textarea id="composeBody" placeholder="What's on your mind?"></textarea>
-        <div class="compose-row">
-          <select id="composeType" aria-label="Post type">
-            <option value="thought">💭 thought</option>
-            <option value="quote">❝ quote</option>
-            <option value="song">🎧 song</option>
-            <option value="link">🔗 link</option>
-            <option value="poem">📖 poem</option>
-            <option value="image">🖼️ image</option>
-          </select>
-          <input id="composeUrl" placeholder="link (optional)" style="flex:1;min-width:8rem" />
-          <button type="submit" class="btn btn-primary">Post</button>
-        </div>
-      </form>
-    </div>`;
+    <form class="chatbar" id="composeForm">
+      <select id="composeType" class="chatbar-type" aria-label="Post type">
+        <option value="thought">💭 thought</option>
+        <option value="quote">❝ quote</option>
+        <option value="song">🎧 song</option>
+        <option value="link">🔗 link</option>
+        <option value="poem">📖 poem</option>
+        <option value="image">🖼️ image</option>
+      </select>
+      <input id="composeBody" class="chatbar-input" placeholder="Message the treehouse…" aria-label="Message" />
+      <button type="submit" class="chatbar-send" aria-label="Send">➤</button>
+      <input id="composeUrl" class="chatbar-url" placeholder="add a link (optional)…" aria-label="Link" />
+    </form>`;
 }
 
 function postCard(p) {
+  const mine = p.author === ME;
   const reacts = reactionSummary(p.reactions);
   const wallEmojis = ['❤️', '🔥', '🥹', '😍'];
   const known = new Set(wallEmojis);
@@ -159,7 +154,7 @@ function postCard(p) {
 
   let media = '';
   if (p.type === 'quote') {
-    media = `<div class="quote">${esc(p.body)}</div>${p.note ? `<div class="lead" style="margin-top:.5rem">${esc(p.note)}</div>` : ''}`;
+    media = `<div class="quote">${esc(p.body)}</div>${p.note ? `<div class="lead" style="margin-top:.4rem">${esc(p.note)}</div>` : ''}`;
   } else if (p.type === 'song') {
     media = `<div class="body">${esc(p.body)}</div>
       <div class="songrow"><span class="ic">🎧</span><div>
@@ -174,33 +169,31 @@ function postCard(p) {
     media = `<div class="body">${esc(p.body)}</div>`;
   }
 
-  const comments = p.comments
-    .map((c) => `<div class="cmt"><b>${esc(nameOf(c.member))}:</b> ${esc(c.text)}</div>`)
-    .join('');
+  const comments = p.comments.length
+    ? `<div class="cmts">${p.comments
+        .map((c) => `<div class="cmt-line"><b>${esc(nameOf(c.member))}</b> ${esc(c.text)}</div>`)
+        .join('')}</div>`
+    : '';
 
   return `
-    <div class="card post" data-post="${esc(p.id)}">
-      <div class="top">${avatar(p.author)}<span class="name">${esc(nameOf(p.author))}</span><span class="time">${timeAgo(p.created_at)}</span></div>
-      ${media}
-      <div class="react">${chips}<button class="chip" data-toggle-comment>💬 reply</button></div>
-      ${comments}
-      <form class="cmt-form" data-comment-form hidden>
-        <input placeholder="add a line…" aria-label="Comment" />
-        <button type="submit">Send</button>
-      </form>
+    <div class="msg ${mine ? 'mine' : 'theirs'}" data-post="${esc(p.id)}">
+      ${mine ? '' : avatar(p.author)}
+      <div class="msg-col">
+        ${mine ? '' : `<div class="msg-name">${esc(nameOf(p.author))}</div>`}
+        <div class="bubble">${media}</div>
+        <div class="msg-meta"><span class="time">${timeAgo(p.created_at)}</span></div>
+        <div class="react">${chips}<button class="chip" data-toggle-comment>💬</button></div>
+        ${comments}
+        <form class="cmt-form" data-comment-form hidden>
+          <input placeholder="reply…" aria-label="Comment" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
     </div>`;
 }
 
 function wireCompose() {
-  const card = document.getElementById('composeCard');
-  const collapsed = document.getElementById('composeCollapsed');
   const form = document.getElementById('composeForm');
-  collapsed.addEventListener('click', () => {
-    card.classList.remove('compose');
-    form.classList.add('open');
-    collapsed.style.display = 'none';
-    document.getElementById('composeBody').focus();
-  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = document.getElementById('composeBody').value.trim();

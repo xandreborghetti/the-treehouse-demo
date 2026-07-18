@@ -12,8 +12,12 @@
 :root {
   --paper:#F7F2E9; --ink:#26211C; --muted:#7A7066; --line:#E4DACB;
   --card:#FFFDF8; --coral:#E1614B; --teal:#2E6E68; --gold:#D79A34;
-  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  /* Typewriter aesthetic: American Typewriter ships with macOS (warm, typewriter-like);
+     Courier New is the cross-platform fallback. Used for the wordmark, headings, body & buttons. */
+  --type:"American Typewriter","Courier New",Courier,ui-monospace,monospace;
+  --serif:var(--type);
+  --sans:var(--type);
+  /* Plain system monospace reserved for tiny meta labels / timestamps for legibility. */
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root{
@@ -23,7 +27,7 @@
 :root[data-theme="light"]{--paper:#F7F2E9;--ink:#26211C;--muted:#7A7066;--line:#E4DACB;--card:#FFFDF8;--coral:#E1614B;--teal:#2E6E68;--gold:#D79A34;}
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;letter-spacing:.01em;-webkit-font-smoothing:antialiased;}
 .wrap{max-width:34rem;margin:0 auto;padding:0 1rem 4rem;}
 button{font-family:inherit;}
 
@@ -68,40 +72,86 @@ header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper)
 .poem .verse{font-family:var(--serif);font-size:1.32rem;line-height:1.4;margin:.5rem 0 .35rem;text-wrap:balance;}
 .poem .attr{font-family:var(--serif);font-style:italic;color:var(--muted);}
 
-/* --- compose --- */
-.compose{display:flex;gap:.6rem;align-items:center;color:var(--muted);border-style:dashed;cursor:text;}
-.compose .plus{width:30px;height:30px;border-radius:50%;background:var(--coral);color:#fff;display:grid;place-items:center;font-size:1.1rem;flex:none;}
-.compose-form{display:none;flex-direction:column;gap:.55rem;}
-.compose-form.open{display:flex;}
-.compose textarea,.field input,.field select,.field textarea{
-  width:100%;font-family:inherit;font-size:.95rem;color:var(--ink);background:var(--paper);
-  border:1px solid var(--line);border-radius:10px;padding:.55rem .65rem;resize:vertical;}
-.compose textarea{min-height:64px;}
-.compose-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
-.compose-row select{flex:none;width:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:.4rem .5rem;font-family:inherit;color:var(--ink);}
+/* ==========================================================================
+   Wall — group chat
+   The feed reads like an iMessage/WhatsApp thread: "You" (member id `you`) on the
+   right in an accent bubble, everyone else on the left in a neutral bubble with a
+   small avatar. Poem-of-the-week stays a pinned banner card above the chat.
+   ========================================================================== */
 
-/* --- post --- */
-.post .top{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;}
-.post .name{font-weight:600;font-size:.92rem;}
-.post .time{font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-left:auto;}
-.post .body{font-size:1rem;}
-.post .quote{font-family:var(--serif);font-size:1.12rem;line-height:1.45;border-left:3px solid var(--teal);padding-left:.8rem;color:var(--ink);}
-.songrow{display:flex;gap:.7rem;align-items:center;background:color-mix(in srgb,var(--teal) 10%,var(--card));border:1px solid var(--line);border-radius:12px;padding:.55rem .7rem;margin-top:.4rem;}
-.songrow .ic{font-size:1.2rem;}
-.songrow .s{color:var(--muted);font-family:var(--mono);font-size:.68rem;}
-.songrow a{color:var(--teal);text-decoration:none;font-weight:600;font-size:.9rem;}
-.imgph{height:150px;border-radius:12px;margin-top:.4rem;background:
+/* feed = vertical chat log */
+#feed.chat{display:flex;flex-direction:column;gap:.1rem;padding:.35rem 0 .4rem;}
+
+/* one message row */
+.msg{display:flex;gap:.45rem;align-items:flex-end;margin:.3rem 0;max-width:100%;}
+.msg.theirs{justify-content:flex-start;}
+.msg.mine{justify-content:flex-end;}
+.msg > .av{flex:none;margin-bottom:.15rem;}
+.msg-col{display:flex;flex-direction:column;max-width:82%;min-width:0;}
+.msg.mine .msg-col{align-items:flex-end;}
+.msg-name{font-size:.72rem;font-weight:600;color:var(--muted);margin:0 0 .12rem .25rem;}
+
+/* the bubble */
+.bubble{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:.5rem .72rem;
+  font-size:.98rem;line-height:1.45;overflow-wrap:anywhere;}
+.msg.theirs .bubble{border-bottom-left-radius:5px;}
+.msg.mine .bubble{background:var(--coral);border-color:var(--coral);color:#fff;border-bottom-right-radius:5px;}
+.msg.mine .bubble a{color:#fff;text-decoration:underline;}
+.bubble .body{font-size:inherit;}
+.msg-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin:.12rem .3rem 0;}
+.msg-meta .time{white-space:nowrap;}
+
+/* media, sized to sit inside a bubble */
+.bubble .quote{font-family:var(--serif);font-size:1.05rem;line-height:1.45;border-left:3px solid var(--teal);padding-left:.7rem;margin:.1rem 0;color:inherit;}
+.msg.mine .bubble .quote{border-left-color:rgba(255,255,255,.6);}
+.songrow{display:flex;gap:.6rem;align-items:center;background:color-mix(in srgb,var(--teal) 10%,var(--card));border:1px solid var(--line);border-radius:12px;padding:.45rem .6rem;margin-top:.4rem;}
+.msg.mine .songrow{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.28);}
+.songrow .ic{font-size:1.1rem;}
+.songrow .s{color:var(--muted);font-family:var(--mono);font-size:.66rem;}
+.msg.mine .songrow .s{color:rgba(255,255,255,.85);}
+.songrow a{color:var(--teal);text-decoration:none;font-weight:600;font-size:.88rem;}
+.msg.mine .songrow a{color:#fff;text-decoration:underline;}
+.imgph{height:120px;border-radius:12px;margin-top:.4rem;background:
   repeating-linear-gradient(45deg,color-mix(in srgb,var(--coral) 16%,var(--card)),color-mix(in srgb,var(--coral) 16%,var(--card)) 12px,var(--card) 12px,var(--card) 24px);
   display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:.7rem;border:1px solid var(--line);}
+
+/* reactions — small inline pills under the bubble */
 .react{display:flex;gap:.4rem;margin-top:.7rem;align-items:center;flex-wrap:wrap;}
+.msg .react{margin-top:.28rem;gap:.3rem;}
+.msg.mine .react{justify-content:flex-end;}
 .chip{font-size:.8rem;border:1px solid var(--line);border-radius:999px;padding:.15rem .55rem;background:transparent;color:var(--ink);cursor:pointer;}
+.msg .chip{font-size:.74rem;padding:.08rem .45rem;line-height:1.5;}
 .chip.on{background:color-mix(in srgb,var(--coral) 16%,transparent);border-color:var(--coral);}
 .chip:hover{border-color:var(--muted);}
-.cmt{font-size:.85rem;color:var(--muted);margin-top:.55rem;padding-top:.55rem;border-top:1px solid var(--line);}
-.cmt b{color:var(--ink);}
-.cmt-form{display:flex;gap:.4rem;margin-top:.5rem;}
-.cmt-form input{flex:1;font-family:inherit;font-size:.85rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.35rem .7rem;}
-.cmt-form button{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:.35rem .7rem;font-size:.8rem;cursor:pointer;}
+
+/* replies — tight, slightly-indented lines under the bubble */
+.cmts{display:flex;flex-direction:column;gap:.1rem;margin:.3rem 0 0;}
+.msg.mine .cmts{align-items:flex-end;}
+.cmt-line{font-size:.82rem;color:var(--muted);padding-left:.55rem;border-left:2px solid var(--line);}
+.msg.mine .cmt-line{padding-left:0;padding-right:.55rem;border-left:0;border-right:2px solid var(--line);text-align:right;}
+.cmt-line b{color:var(--ink);font-weight:600;}
+.cmt-form{display:flex;gap:.4rem;margin-top:.35rem;}
+.cmt-form input{flex:1;font-family:inherit;font-size:.82rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.3rem .65rem;}
+.cmt-form button{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:.3rem .65rem;font-size:.78rem;cursor:pointer;}
+
+/* general form fields (predictions/goals/etc — unchanged behavior) */
+.field input,.field select,.field textarea{
+  width:100%;font-family:inherit;font-size:.95rem;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:10px;padding:.55rem .65rem;resize:vertical;}
+
+/* composer — chat-style input bar pinned to the bottom of the Wall */
+.chatbar{position:sticky;bottom:0;z-index:4;display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;
+  background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:22px;padding:.4rem .5rem;margin:.5rem 0 0;}
+.chatbar-type{flex:none;width:auto;background:var(--paper);border:1px solid var(--line);border-radius:999px;
+  padding:.35rem .45rem;font-family:inherit;font-size:.8rem;color:var(--ink);cursor:pointer;}
+.chatbar-input{flex:1;min-width:8rem;font-family:inherit;font-size:.95rem;color:var(--ink);
+  background:transparent;border:none;outline:none;padding:.4rem .3rem;}
+.chatbar-url{flex-basis:100%;font-family:inherit;font-size:.82rem;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:999px;padding:.32rem .7rem;}
+.chatbar-send{flex:none;width:34px;height:34px;border-radius:50%;background:var(--coral);border:none;
+  color:#fff;font-size:1rem;cursor:pointer;display:grid;place-items:center;line-height:1;}
+.chatbar-send:hover{filter:brightness(1.05);}
 
 /* --- rows / mini cards --- */
 .row{display:flex;justify-content:space-between;gap:.5rem;font-size:.86rem;padding:.28rem 0;border-bottom:1px dashed var(--line);align-items:center;}
@@ -699,40 +749,35 @@ async function renderWall() {
 
   view.innerHTML = `
     ${poemHTML}
-    ${composeCard()}
     <div class="sec">🧱 The wall</div>
-    <div id="feed">${posts.map(postCard).join('')}</div>
+    <div id="feed" class="chat">${posts.map(postCard).join('')}</div>
+    ${composeBar()}
   `;
 
   wireCompose();
   wireFeed();
 }
 
-function composeCard() {
+// Chat-style input bar, pinned to the bottom of the Wall view.
+function composeBar() {
   return `
-    <div class="card compose" id="composeCard">
-      <div class="compose-collapsed" id="composeCollapsed">
-        <span class="plus">+</span><span>Share a poem, a song, a thought, a photo…</span>
-      </div>
-      <form class="compose-form" id="composeForm">
-        <textarea id="composeBody" placeholder="What's on your mind?"></textarea>
-        <div class="compose-row">
-          <select id="composeType" aria-label="Post type">
-            <option value="thought">💭 thought</option>
-            <option value="quote">❝ quote</option>
-            <option value="song">🎧 song</option>
-            <option value="link">🔗 link</option>
-            <option value="poem">📖 poem</option>
-            <option value="image">🖼️ image</option>
-          </select>
-          <input id="composeUrl" placeholder="link (optional)" style="flex:1;min-width:8rem" />
-          <button type="submit" class="btn btn-primary">Post</button>
-        </div>
-      </form>
-    </div>`;
+    <form class="chatbar" id="composeForm">
+      <select id="composeType" class="chatbar-type" aria-label="Post type">
+        <option value="thought">💭 thought</option>
+        <option value="quote">❝ quote</option>
+        <option value="song">🎧 song</option>
+        <option value="link">🔗 link</option>
+        <option value="poem">📖 poem</option>
+        <option value="image">🖼️ image</option>
+      </select>
+      <input id="composeBody" class="chatbar-input" placeholder="Message the treehouse…" aria-label="Message" />
+      <button type="submit" class="chatbar-send" aria-label="Send">➤</button>
+      <input id="composeUrl" class="chatbar-url" placeholder="add a link (optional)…" aria-label="Link" />
+    </form>`;
 }
 
 function postCard(p) {
+  const mine = p.author === ME;
   const reacts = reactionSummary(p.reactions);
   const wallEmojis = ['❤️', '🔥', '🥹', '😍'];
   const known = new Set(wallEmojis);
@@ -749,7 +794,7 @@ function postCard(p) {
 
   let media = '';
   if (p.type === 'quote') {
-    media = `<div class="quote">${esc(p.body)}</div>${p.note ? `<div class="lead" style="margin-top:.5rem">${esc(p.note)}</div>` : ''}`;
+    media = `<div class="quote">${esc(p.body)}</div>${p.note ? `<div class="lead" style="margin-top:.4rem">${esc(p.note)}</div>` : ''}`;
   } else if (p.type === 'song') {
     media = `<div class="body">${esc(p.body)}</div>
       <div class="songrow"><span class="ic">🎧</span><div>
@@ -764,33 +809,31 @@ function postCard(p) {
     media = `<div class="body">${esc(p.body)}</div>`;
   }
 
-  const comments = p.comments
-    .map((c) => `<div class="cmt"><b>${esc(nameOf(c.member))}:</b> ${esc(c.text)}</div>`)
-    .join('');
+  const comments = p.comments.length
+    ? `<div class="cmts">${p.comments
+        .map((c) => `<div class="cmt-line"><b>${esc(nameOf(c.member))}</b> ${esc(c.text)}</div>`)
+        .join('')}</div>`
+    : '';
 
   return `
-    <div class="card post" data-post="${esc(p.id)}">
-      <div class="top">${avatar(p.author)}<span class="name">${esc(nameOf(p.author))}</span><span class="time">${timeAgo(p.created_at)}</span></div>
-      ${media}
-      <div class="react">${chips}<button class="chip" data-toggle-comment>💬 reply</button></div>
-      ${comments}
-      <form class="cmt-form" data-comment-form hidden>
-        <input placeholder="add a line…" aria-label="Comment" />
-        <button type="submit">Send</button>
-      </form>
+    <div class="msg ${mine ? 'mine' : 'theirs'}" data-post="${esc(p.id)}">
+      ${mine ? '' : avatar(p.author)}
+      <div class="msg-col">
+        ${mine ? '' : `<div class="msg-name">${esc(nameOf(p.author))}</div>`}
+        <div class="bubble">${media}</div>
+        <div class="msg-meta"><span class="time">${timeAgo(p.created_at)}</span></div>
+        <div class="react">${chips}<button class="chip" data-toggle-comment>💬</button></div>
+        ${comments}
+        <form class="cmt-form" data-comment-form hidden>
+          <input placeholder="reply…" aria-label="Comment" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
     </div>`;
 }
 
 function wireCompose() {
-  const card = document.getElementById('composeCard');
-  const collapsed = document.getElementById('composeCollapsed');
   const form = document.getElementById('composeForm');
-  collapsed.addEventListener('click', () => {
-    card.classList.remove('compose');
-    form.classList.add('open');
-    collapsed.style.display = 'none';
-    document.getElementById('composeBody').focus();
-  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = document.getElementById('composeBody').value.trim();
